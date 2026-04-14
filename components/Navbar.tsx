@@ -21,7 +21,7 @@ const Navbar = () => {
             <div className="wrapper navbar-height py-4 flex justify-between items-center">
                 {/* Rebranded Logo Section */}
                 <Link href="/" className="flex gap-0.5 items-center">
-                    <Image src="/assets/logo1.png" alt="PageWhisper" width={80} height={80} />
+                    <Image src="/assets/logo01.png" alt="PageWhisper" width={80} height={80} />
                     <span className="logo-text font-serif italic tracking-tight text-xl">PageWhisper</span>
                 </Link>
 
