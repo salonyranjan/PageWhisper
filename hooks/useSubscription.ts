@@ -17,6 +17,7 @@ export const useSubscription = () => {
 
     let plan: PlanType = PLANS.FREE;
 
+   
     const metadata = user?.publicMetadata;
     const metadataPlan = (
         metadata?.plan || 
