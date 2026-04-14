@@ -6,7 +6,6 @@ import { PLANS, PLAN_LIMITS, PlanType } from "@/lib/subscription-constants";
 export const useSubscription = () => {
     const { user, isLoaded } = useUser();
 
-    // While Clerk is loading, return the Free Plan defaults
     if (!isLoaded) {
         return {
             plan: PLANS.FREE,
@@ -17,7 +16,6 @@ export const useSubscription = () => {
 
     let plan: PlanType = PLANS.FREE;
 
-   
     const metadata = user?.publicMetadata;
     const metadataPlan = (
         metadata?.plan || 
