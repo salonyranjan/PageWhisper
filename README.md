@@ -21,6 +21,28 @@
 **PageWhisper** is a high-performance AI SaaS that leverages a cutting-edge **RAG (Retrieval-Augmented Generation)** pipeline to allow users to have real-time, human-like conversations with their books.
 
 [**Live Demo**](https://page-whisper.vercel.app) 
+
+---
+
+## 📍 Table of Contents
+
+* [🚀 Key Features](#-key-features)
+* [🏗️ Project Architecture](#️-project-architecture)
+  * [🧩 System Components](#-system-components)
+  * [🔄 System Architecture Diagram](#-system-architecture-diagram)
+  * [⚙️ Architecture Highlights](#️-architecture-highlights)
+* [🔄 Workflow Diagram](#-workflow-diagram-1)
+* [📊 Data Flow Diagram (RAG & Voice)](#-data-flow-diagram-rag--voice)
+* [💻 Tech Stack](#-tech-stack)
+  * [🛠️ Technical Breakdown](#️-technical-breakdown)
+* [🛠️ Installation & Setup](#️-installation--setup)
+  * [🚀 Getting Started](#-getting-started)
+* [🔑 Environment Variables](#-environment-variables)
+* [⚙️ Configuration Details](#️-configuration-details)
+* [🔐 Security & Optimization](#-security--optimization)
+* [📈 Live Dashboard & SaaS Metrics](#-live-dashboard--saas-metrics)
+* [📄 License](#-license)
+
 ---
 
 ## 🚀 Key Features
@@ -36,14 +58,93 @@
 
 ## 🏗️ Project Architecture
 
-PageWhisper follows a **Decoupled Client-Server Architecture** optimized for edge performance and real-time audio streaming.
+PageWhisper is built on a **Decoupled Client-Server Architecture** optimized for edge performance, security, and real-time audio streaming.
+
+<div align="center">
+  <h3>Core Tech Stack Overview</h3>
+  
+  ![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=for-the-badge&logo=next.js&logoColor=white)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+  ![Tailwind_CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+  <br>
+  ![Vapi_AI](https://img.shields.io/badge/Vapi_AI-FF4B4B?style=for-the-badge&logo=openai&logoColor=white)
+  ![MongoDB](https://img.shields.io/badge/MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
+  ![Clerk](https://img.shields.io/badge/Clerk_Auth-6C47FF?style=for-the-badge&logo=clerk&logoColor=white)
+</div>
+
+---
 
 ### 🧩 System Components
-1.  **Frontend (Next.js 16):** React Server Components (RSC) for SEO; Client Components for real-time Voice UI.
-2.  **Voice Orchestration (Vapi):** Handles WebRTC audio streams and turn-taking logic.
-3.  **Storage (Vercel Blob):** High-speed edge storage for binary PDF data and generated covers.
-4.  **Database (MongoDB Atlas):** Document store for metadata and indexed text segments.
-5.  **Auth/Billing (Clerk):** Unified identity and subscription lifecycle management.
+
+1* **Frontend (Next.js 15+ App Router):** React Server Components (RSC) manage SEO and initial data fetching. Client Components handle the interactive Voice UI and audio streaming.
+
+2* **Voice Orchestration (Vapi AI):** A managed service that handles the complexity of WebRTC audio streams, transcription (STT), and turn-taking logic.
+
+3* **Database (MongoDB Atlas):** An indexed document store containing book metadata and, crucially, the segmented text chunks for RAG.
+
+4* **Object Store (Vercel Blob):** Edge-optimized storage for raw PDF binaries and the automatically extracted cover images.
+
+5* **Identity & Billing (Clerk):** Unified session management (JWT) and SaaS subscription enforcement (Free vs. Pro).
+
+---
+
+### 🔄 System Architecture Diagram
+
+This high-level diagram visualizes how data flows between the user, your Next.js application, and the crucial third-party AI/Data services.
+
+```mermaid
+graph TD
+    %% User/Client Side
+    subgraph Client ["<font color='#FFFFFF'>Browser / Client-Side</font>"]
+        User["<font color='#000000'>User Interface</font>"]
+        VoiceUI["<font color='#000000'>Vapi SDK Voice Controls</font>"]
+        PDFUpload["<font color='#000000'>PDF/Cover Upload</font>"]
+    end
+
+    %% Next.js App
+    subgraph NextJS ["<font color='#FFFFFF'>Next.js App Router (Vercel)</font>"]
+        Middleware["<font color='#000000'>Clerk Middleware (Auth Proxy)</font>"]
+        ServerActions["<font color='#000000'>Server Actions (Secure SSI)</font>"]
+        API_RAG["<font color='#000000'>API Route (/api/vapi/search-book)</font>"]
+    end
+
+    %% Third-Party Services
+    subgraph AIServices ["<font color='#FFFFFF'>AI & Media Stack</font>"]
+        Vapi["<font color='#000000'>Vapi AI Orchestrator</font>"]
+        ElevenLabs["<font color='#000000'>11 Labs (TTS Persona)</font>"]
+    end
+
+    subgraph DataStack ["<font color='#000000'>Data & Storage Stack</font>"]
+        VercelBlob[("<font color='#000000'>Vercel Blob Storage</font>")]
+        MongoDB[("<font color='#000000'>MongoDB Atlas</font>")]
+        ClerkBilling["<font color='#000000'>Clerk Billing (SaaS Gating)</font>"]
+    end
+
+    %% Relationships
+    User --> PDFUpload
+    PDFUpload --> ServerActions
+    ServerActions --> VercelBlob
+    ServerActions --> MongoDB
+    ServerActions --> ClerkBilling
+
+    User --> VoiceUI
+    VoiceUI <==> Vapi
+    Vapi <--> ElevenLabs
+    
+    Vapi ==> API_RAG
+    API_RAG ===> MongoDB
+
+    %% Styling
+    classDef client fill:#FF69B4,stroke:#333,stroke-width:2px;
+    classDef app fill:#9370DB,stroke:#333,stroke-width:1px;
+    classDef service fill:#E0FFE0,stroke:#333,stroke-width:1px;
+    classDef data fill:#FFFFE0,stroke:#333,stroke-width:1px;
+
+    class User,VoiceUI,PDFUpload client;
+    class NextJS,Middleware,ServerActions,API_RAG app;
+    class AIServices,Vapi,ElevenLabs service;
+    class DataStack,VercelBlob,MongoDB,ClerkBilling data;
+```
 
 ---
 
@@ -82,6 +183,8 @@ sequenceDiagram
     V->>V: LLM (Context + Persona)
     V-->>U: Synthesized Voice (TTS)
 ```
+
+---
 ## 💻 Tech Stack
 
 ### Frontend & Core
@@ -138,33 +241,38 @@ Follow these steps to get a local copy of **PageWhisper** up and running.
 ### 🚀 Getting Started
 
 1. **Clone the Repository:**
-   ```bash
+```bash
    git clone [https://github.com/salonyranjan/page-whisper.git](https://github.com/salonyranjan/page-whisper.git)
    cd page-whisper
-   ```
- 2.  **Install Dependencies:**
-
- ```bash
+```
+  
+   
+ 2. **Install Dependencies:**
+```bash
 npm install
- ```
+```
+
+ 
 3. **Authenticate & Link Vercel:**
 This project uses Vercel Blob and Environment Variables managed by Vercel.
-
- ```bash
+```bash
 vercel login
 vercel link
- ```
+```
+
+ 
 4. **Sync Environment Variables:**
 Pull the production variables into your local .env.local file:
-
- ```bash
+```bash
 vercel env pull .env.local
- ```
-5. **Initialize Development Server:**
+```
 
- ```bash
+ 
+5.  **Initialize Development Server:**
+```bash
 npm run dev
- ```
+```
+ 
 Your app should now be running at http://localhost:3000.
 
 ---
@@ -225,7 +333,7 @@ For high-performance Retrieval-Augmented Generation (RAG), you must run the foll
 ```javascript
 db.booksegments.createIndex({ content: "text", bookId: 1 })
 ```
----
+<p align="right">(<a href="#-pagewhisper">back to top</a>)</p>
 
 ## 🔐 Security & Optimization
 
@@ -260,7 +368,7 @@ await db.collection('booksegments').createIndex({ 
   bookId: 1 
 });
 ```
----
+<p align="right">(<a href="#-pagewhisper">back to top</a>)</p>
 
 ## 📈 Live Dashboard & SaaS Metrics
 
@@ -276,8 +384,6 @@ The application's performance is monitored across four primary dimensions:
 | **Search Accuracy** | MongoDB Profiler | < 100ms Query Execution |
 | **Storage I/O** | Vercel Storage | Zero-fail PDF Buffer Stream |
 
----
-
 ### 💳 SaaS Lifecycle Management
 We utilize **Clerk Billing** to manage the revenue engine. The dashboard allows for real-time tracking of:
 
@@ -286,9 +392,7 @@ We utilize **Clerk Billing** to manage the revenue engine. The dashboard allows 
 * **Feature Gating:** Dynamic enforcement of:
     * **Book Quotas:** 1 (Free) vs. 10 (Standard) vs. 100+ (Pro).
     * **Time Caps:** Automated session termination via backend countdown hooks when plan minutes are exhausted.
-
- ---     
-
+  
 ### 🧪 Conversation Analytics
 Every interaction is logged to refine the AI's "Reading Comprehension":
 * **Segment Hit Rate:** Tracking which book chunks are most frequently retrieved.
