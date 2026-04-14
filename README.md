@@ -41,7 +41,6 @@
 * [⚙️ Configuration Details](#️-configuration-details)
 * [🔐 Security & Optimization](#-security--optimization)
 * [📈 Live Dashboard & SaaS Metrics](#-live-dashboard--saas-metrics)
-* [📄 License](#-license)
 
 ---
 
@@ -405,9 +404,6 @@ Every interaction is logged to refine the AI's "Reading Comprehension":
 * **Cold Starts:** Optimized via Next.js **Edge Runtime** to ensure the voice handshake is instant, even after periods of inactivity.
 
 ---
-
-### 📄 License
-Distributed under the MIT License. See `LICENSE` for more information.
 
 ### 🤝 Contributing
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
